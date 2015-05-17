@@ -1,0 +1,32 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+task generateDependencies(type: Jar) {
+  exclude 'META-INF/LICENSE'
+  exclude 'META-INF/LICENSE.txt'
+  exclude 'META-INF/NOTICE'
+  exclude 'META-INF/NOTICE.txt'
+
+  baseName = 'dependencies'
+  from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+  with jar
+}
+
+repositories {
+  def androidHome = System.getenv("RUBYMOTION_ANDROID_SDK")
+  maven {
+    url "$androidHome/extras/android/m2repository/"
+  }
+  <% @repositories.each do |url| %>
+    maven {
+      url "<%= url %>"
+    }
+  <% end %>
+  mavenCentral()
+}
+ 
+dependencies {
+  <% @dependencies.each do |dependency| %>
+    compile '<%= dependency[:name] %>:<%= dependency[:artifact] %>:<%= dependency[:version] %>'
+  <% end %>
+}
